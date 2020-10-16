@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Globals:
+  Function:
+    Runtime: nodejs12.x
+    Timeout: 30
+    MemorySize: 128
+Resources:
+  ChimeMeetingsAccessPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: ChimeMeetingsAccess
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'chime:*'
+            Resource: '*'
+      Roles:
+        - Ref: MeetingJoinLambdaRole
+  MeetingIndexLambda:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: handlers.index
+      Events:
+        Api1:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: GET
+  MeetingJoinLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers.join
+      Events:
+        Api1:
+          Type: Api
+          Properties:
+            Path: /join
+            Method: POST
+Outputs:
+  ApiURL:
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/index.html"
